@@ -1173,6 +1173,11 @@ NSComparisonResult compareViewDepth(UIView *view1, UIView *view2, iCarousel *sel
     return view;
 }
 
+- (void)clearItemPool
+{
+    [_itemViewPool removeAllObjects];
+}
+
 - (UIView *)dequeuePlaceholderView
 {
     UIView *view = [_placeholderViewPool anyObject];
@@ -1211,6 +1216,9 @@ NSComparisonResult compareViewDepth(UIView *view1, UIView *view2, iCarousel *sel
     }
     
     [self setItemView:view forIndex:index];
+    
+    _itemWidth = [_delegate carouselItemWidth:self] ?: _itemWidth;
+
     if (containerView)
     {
         //get old item view
@@ -1237,6 +1245,9 @@ NSComparisonResult compareViewDepth(UIView *view1, UIView *view2, iCarousel *sel
             frame.size.height = view.frame.size.height;
         }
         containerView.bounds = frame;
+        containerView.layer.borderColor
+        = [UIColor greenColor].CGColor;
+        containerView.layer.borderWidth = 1.0f;
         
 #ifdef ICAROUSEL_MACOS
         
@@ -1257,8 +1268,22 @@ NSComparisonResult compareViewDepth(UIView *view1, UIView *view2, iCarousel *sel
     }
     else
     {
+        CGRect frame = view.bounds;
+        if(_vertical)
+        {
+            frame.size.width = view.frame.size.width;
+            frame.size.height = MIN(_itemWidth, view.frame.size.height);
+        }
+        else
+        {
+            frame.size.width = MIN(_itemWidth, view.frame.size.width);
+            frame.size.height = view.frame.size.height;
+        }
+        view.bounds = frame;
+
         [_contentView addSubview:[self containView:view]];
     }
+    
     view.superview.layer.opacity = 0.0;
     [self transformItemView:view atIndex:index];
     
